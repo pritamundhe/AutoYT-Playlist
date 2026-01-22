@@ -1,6 +1,6 @@
 # Automated YouTube Playlist Generator
 
-## Research-Grade AI System for Academic Syllabus to YouTube Playlist Conversion
+## AI System for Academic Syllabus to YouTube Playlist Conversion
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-green.svg)](https://fastapi.tiangolo.com/)
@@ -9,7 +9,7 @@
 
 ### 🎯 Overview
 
-This system uses advanced NLP (Sentence-BERT, spaCy) and multi-criteria ranking (XGBoost) to automatically generate curated YouTube playlists from academic syllabi. Designed for research publication and final-year engineering projects.
+This system uses advanced NLP (Sentence-BERT, spaCy) and multi-criteria ranking (XGBoost) to automatically generate curated YouTube playlists from academic syllabi.
 
 ### ✨ Key Features
 
@@ -251,4 +251,4 @@ For questions or collaboration: [Your Email]
 
 ---
 
-**Built with ❤️ for researchers and educators**
+**Built with ❤️ for educators**
