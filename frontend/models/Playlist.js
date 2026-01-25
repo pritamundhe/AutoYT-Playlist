@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const PlaylistSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    userName: String,
     topics: [{
         topic: String,
         videos: [{
