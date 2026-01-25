@@ -4,6 +4,11 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-14+-black.svg)](https://nextjs.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-red.svg)](https://autoyt-playlist.onrender.com/)
+
+### 🔗 [Try the Live Demo](https://autoyt-playlist.onrender.com/)
+
+---
 
 ### 🧐 What is this?
 
@@ -29,7 +34,7 @@ Want to run this yourself? Here is the quick setup guide.
 #### Prerequisites
 - Node.js 18+
 - MongoDB (Local or Atlas)
-- A YouTube Data API Key (It's free!)
+- **YouTube Data API v3 Key** (Important! This is needed to fetch videos)
 
 #### 1. Clone the Repo
 ```bash
@@ -37,7 +42,7 @@ git clone https://github.com/pritamundhe/AutoYT-Playlist.git
 cd AutoYT-Playlist
 ```
 
-#### 2. Install Dependencies �
+#### 2. Install Dependencies 📦
 Everything is handled by the frontend now (Fullstack Next.js magic).
 ```bash
 cd frontend
@@ -45,9 +50,12 @@ npm install
 ```
 
 #### 3. Environment Setup 🔑
-Create a `.env.local` file in the `frontend` folder and add your keys:
+Create a `.env.local` file in the `frontend` folder. You **MUST** add your YouTube Data API v3 key for the app to work.
+
 ```env
-GOOGLE_API_KEY=your_youtube_api_key_here
+# Get this from Google Cloud Console (Enable YouTube Data API v3)
+GOOGLE_API_KEY=your_youtube_data_api_v3_key
+
 MONGODB_URI=your_mongodb_connection_string
 NEXTAUTH_SECRET=your_secret_key
 NEXTAUTH_URL=http://localhost:3000
