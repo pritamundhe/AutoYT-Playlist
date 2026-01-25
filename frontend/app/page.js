@@ -2,7 +2,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+
 import VideoModal from '../components/VideoModal';
+import { UploadCloud, FileText, Layout, Download, Youtube, Eye, ThumbsUp, Play, Clock, Search, Sparkles } from 'lucide-react';
 
 export default function Home() {
     const [file, setFile] = useState(null);
@@ -166,10 +168,14 @@ export default function Home() {
                             />
                             <label htmlFor="file-upload" style={{ cursor: 'pointer', display: 'block' }}>
                                 {file ? (
-                                    <div style={{ color: '#22d3ee', fontSize: '1.2rem', fontWeight: '500' }}>📄 {file.name}</div>
+                                    <div style={{ color: '#22d3ee', fontSize: '1.2rem', fontWeight: '500', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                                        <FileText size={24} /> {file.name}
+                                    </div>
                                 ) : (
                                     <div style={{ color: '#94a3b8' }}>
-                                        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📂</div>
+                                        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+                                            <UploadCloud size={48} />
+                                        </div>
                                         <p style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Click or Drop Syllabus Here</p>
                                         <p style={{ fontSize: '0.9rem', opacity: 0.5 }}>PDF, DOCX, TXT</p>
                                     </div>
@@ -183,7 +189,12 @@ export default function Home() {
                                     <div className="loader"></div>
                                     <span>Processing Intelligence...</span>
                                 </>
-                            ) : 'Generate Playlist ✨'}
+                            ) : (
+                                <>
+                                    <span>Generate Playlist</span>
+                                    <Sparkles size={20} />
+                                </>
+                            )}
                         </button>
 
                         {error && <div style={{ color: '#fb7185', textAlign: 'center', background: 'rgba(251, 113, 133, 0.1)', padding: '1rem', borderRadius: '8px' }}>{error}</div>}
@@ -215,10 +226,10 @@ export default function Home() {
 
                             <div style={{ display: 'flex', gap: '1rem' }}>
                                 <button className="btn btn-secondary" onClick={handleDownloadJSON} disabled={selectedVideos.size === 0} style={{ opacity: selectedVideos.size === 0 ? 0.5 : 1 }}>
-                                    Download JSON 📥
+                                    <span>Download JSON</span> <Download size={18} />
                                 </button>
                                 <button className="btn" onClick={handleExportYouTube} disabled={selectedVideos.size === 0} style={{ opacity: selectedVideos.size === 0 ? 0.5 : 1 }}>
-                                    Open in YouTube 📺
+                                    <span>Open in YouTube</span> <Youtube size={18} />
                                 </button>
                             </div>
                         </div>
@@ -318,7 +329,7 @@ export default function Home() {
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                         border: '1px solid rgba(255,255,255,0.4)'
                                                     }}>
-                                                        <span style={{ fontSize: '24px', marginLeft: '4px' }}>▶</span>
+                                                        <Play size={32} fill="white" />
                                                     </div>
                                                 </div>
 
@@ -338,8 +349,8 @@ export default function Home() {
                                                     {video.channel}
                                                 </p>
                                                 <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#64748b', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
-                                                    <span>👁️ {formatNumber(video.views)}</span>
-                                                    <span>👍 {formatNumber(video.likes)}</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Eye size={14} /> {formatNumber(video.views)}</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><ThumbsUp size={14} /> {formatNumber(video.likes)}</span>
                                                 </div>
                                             </div>
                                         </div>
