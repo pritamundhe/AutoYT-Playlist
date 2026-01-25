@@ -149,3 +149,13 @@ select:focus {
         transform: rotate(360deg);
     }
 }
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}

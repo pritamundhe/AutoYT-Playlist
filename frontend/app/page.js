@@ -1,16 +1,22 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSession, signIn, signOut } from "next-auth/react";
 
 import VideoModal from '../components/VideoModal';
-import { UploadCloud, FileText, Layout, Download, Youtube, Eye, ThumbsUp, Play, Clock, Search, Sparkles } from 'lucide-react';
+import { UploadCloud, FileText, Layout, Download, Youtube, Eye, ThumbsUp, Play, Clock, Search, Sparkles, History as HistoryIcon } from 'lucide-react';
 
 export default function Home() {
+    const { data: session } = useSession();
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [playlist, setPlaylist] = useState(null);
     const [error, setError] = useState(null);
+
+    // History State
+    const [showHistory, setShowHistory] = useState(false);
+    const [history, setHistory] = useState([]);
 
     // State for Features
     const [playlistName, setPlaylistName] = useState('');
@@ -55,7 +61,16 @@ export default function Home() {
             }
 
             setPlaylist(data.playlist);
-            // Removed auto-selection logic here
+
+            // Save to History
+            await fetch('/api/history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: e.target.files[0].name.replace(/\.[^/.]+$/, "") || 'Untitled Playlist',
+                    topics: data.playlist
+                })
+            });
 
         } catch (err) {
             setError(err.message);
@@ -74,10 +89,39 @@ export default function Home() {
         setSelectedVideos(newSet);
     };
 
-    const handleExportYouTube = () => {
+    const handleExportYouTube = async () => {
         if (selectedVideos.size === 0) return;
-        const ids = Array.from(selectedVideos).join(',');
-        window.open(`http://www.youtube.com/watch_videos?video_ids=${ids}`, '_blank');
+
+        // If not signed in, fallback to old method
+        if (!session) {
+            const ids = Array.from(selectedVideos).join(',');
+            window.open(`http://www.youtube.com/watch_videos?video_ids=${ids}`, '_blank');
+            return;
+        }
+
+        // Save to YouTube Account
+        try {
+            setLoading(true);
+            const res = await fetch('/api/youtube/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    accessToken: session.accessToken,
+                    name: playlistName || 'AutoYT Playlist',
+                    videoIds: Array.from(selectedVideos)
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`Playlist "${playlistName}" created on your YouTube channel!`);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (err) {
+            alert('Failed to save to YouTube: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleDownloadJSON = () => {
@@ -102,6 +146,26 @@ export default function Home() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url);
+    };
+
+    const fetchHistory = async () => {
+        try {
+            const res = await fetch('/api/history');
+            const data = await res.json();
+            if (data.playlists) {
+                setHistory(data.playlists);
+                setShowHistory(true);
+            }
+        } catch (err) {
+            console.error('Failed to fetch history:', err);
+        }
+    };
+
+    const loadFromHistory = (item) => {
+        setPlaylist(item.topics);
+        setPlaylistName(item.name);
+        setShowHistory(false);
     };
 
     // Filter Logic
@@ -122,6 +186,19 @@ export default function Home() {
             return { ...item, videos };
         });
     }, [playlist, minViews, minLikes, sortBy]);
+
+    // Auto-Select Top Videos
+    useMemo(() => {
+        if (!filteredPlaylist) return;
+
+        const newSet = new Set();
+        filteredPlaylist.forEach(item => {
+            if (item.videos.length > 0) {
+                newSet.add(item.videos[0].id);
+            }
+        });
+        setSelectedVideos(newSet);
+    }, [filteredPlaylist]);
 
     const formatNumber = (num) => {
         return new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(num);
@@ -144,7 +221,77 @@ export default function Home() {
                     AutoYT Playlist
                 </h1>
                 <p style={{ color: '#94a3b8', fontSize: '1.2rem' }}>Transform your syllabus into a curated learning journey.</p>
+                <div style={{ position: 'absolute', top: '2rem', right: '2rem', display: 'flex', gap: '1rem' }}>
+                    {session ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{session.user.name}</span>
+                            <button onClick={() => signOut()} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Sign Out</button>
+                        </div>
+                    ) : (
+                        <button onClick={() => signIn('google')} style={{ background: 'var(--primary)', border: 'none', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}>Sign In with Google</button>
+                    )}
+
+                    <button
+                        onClick={fetchHistory}
+                        style={{
+                            background: 'transparent', border: '1px solid var(--glass-border)',
+                            color: '#94a3b8', padding: '0.5rem 1rem', borderRadius: '8px',
+                            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                        }}
+                    >
+                        <HistoryIcon size={18} /> History
+                    </button>
+                </div>
             </header>
+
+            {/* History Modal/Sidebar */}
+            {showHistory && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 1000,
+                    background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
+                    display: 'flex', justifyContent: 'flex-end'
+                }}>
+                    <div className="glass-panel" style={{
+                        width: '100%', maxWidth: '400px', height: '100%',
+                        borderRadius: '20px 0 0 20px', padding: '2rem',
+                        overflowY: 'auto', borderRight: 'none',
+                        animation: 'slideIn 0.3s ease'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>History</h2>
+                            <button onClick={() => setShowHistory(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>×</button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {history.map((item, i) => (
+                                <div key={i}
+                                    onClick={() => loadFromHistory(item)}
+                                    style={{
+                                        padding: '1rem', borderRadius: '12px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.05)',
+                                        cursor: 'pointer', transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'rgba(139, 92, 246, 0.1)';
+                                        e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                                    }}
+                                >
+                                    <div style={{ fontWeight: '600', marginBottom: '0.3rem' }}>{item.name}</div>
+                                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                                        <span>{item.topics.length} topics</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {!playlist ? (
                 <section className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto', padding: '3rem' }}>
@@ -224,12 +371,12 @@ export default function Home() {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                 <button className="btn btn-secondary" onClick={handleDownloadJSON} disabled={selectedVideos.size === 0} style={{ opacity: selectedVideos.size === 0 ? 0.5 : 1 }}>
                                     <span>Download JSON</span> <Download size={18} />
                                 </button>
                                 <button className="btn" onClick={handleExportYouTube} disabled={selectedVideos.size === 0} style={{ opacity: selectedVideos.size === 0 ? 0.5 : 1 }}>
-                                    <span>Open in YouTube</span> <Youtube size={18} />
+                                    <span>{session ? 'Save to YouTube Account' : 'Open in YouTube'}</span> <Youtube size={18} />
                                 </button>
                             </div>
                         </div>
