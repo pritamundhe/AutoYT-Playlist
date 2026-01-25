@@ -81,7 +81,7 @@ Open `http://localhost:3000` and start cramming! 📚
 ---
 
 ### 🤝 Contributing
-Found a way to make it even faster? Pull requests are welcome! Let's help more students survive finals week.
+Found a way to make it even faster? Pull requests are welcome!
 
 ### 📄 License
 MIT License - do whatever you want with it!
