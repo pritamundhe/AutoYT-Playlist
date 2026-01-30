@@ -6,7 +6,7 @@ const youtube = google.youtube({
     auth: process.env.YOUTUBE_API_KEY,
 });
 
-export async function searchVideos(query, maxResults = 5) {
+export async function searchVideos(query, maxResults = 20) {
     try {
         // 1. Search for video IDs
         const searchResponse = await youtube.search.list({
