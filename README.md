@@ -8,6 +8,8 @@
 
 ### 🔗 [Try the Live Demo](https://autoyt-playlist.onrender.com/)
 
+![AutoYT-Playlist Demo](frontend/components/RuningProject.gif)
+
 ---
 
 ### 🧐 What is this?
